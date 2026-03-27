@@ -1,4 +1,4 @@
-const API = "http://localhost:8080/api";
+const API = window.location.origin + "/api";
 let activeUser = "";
 let userProfile = { email: "", phone: "" };
 let targetRoomId = null;
