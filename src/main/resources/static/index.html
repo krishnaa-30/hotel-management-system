@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Grand Horizon | Luxury Hotel Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+
+<div class="sidebar">
+    <h2>Grand Horizon</h2>
+    <div id="nav-reg" class="nav-link active" onclick="nav('reg')">👤 Guest Registration</div>
+    <div id="nav-login" class="nav-link" onclick="nav('login')">🔑 Guest Login</div>
+    <div id="nav-book" class="nav-link" onclick="nav('book')">🛌 Room Booking</div>
+    <div id="nav-admin" class="nav-link" onclick="nav('admin')">📊 Admin Dashboard</div>
+    <div style="margin-top: auto;">
+        <button class="btn" style="background: #334155; color: white;" onclick="location.reload()">🔄 Logout</button>
+    </div>
+</div>
+
+<div class="main">
+    <div id="view-reg" class="card" style="max-width: 500px; margin: 40px auto;">
+        <h1>Create Guest Profile</h1>
+        <input type="text" id="r-user" placeholder="Username">
+        <input type="text" id="r-name" placeholder="Full Name">
+        <input type="email" id="r-email" placeholder="Email Address">
+        <input type="text" id="r-phone" placeholder="Phone Number">
+        <input type="password" id="r-pass" placeholder="Password">
+        <button class="btn btn-primary" onclick="register()">Register</button>
+    </div>
+
+    <div id="view-login" class="card hidden" style="max-width: 400px; margin: 60px auto;">
+        <h1>Guest Login</h1>
+        <input type="text" id="l-user" placeholder="Username">
+        <input type="password" id="l-pass" placeholder="Password">
+        <button class="btn btn-primary" onclick="login()">Sign In</button>
+    </div>
+
+    <div id="view-book" class="hidden">
+        <div class="header-flex">
+            <h1>Book a Suite</h1>
+            <span id="user-tag"></span>
+        </div>
+        <div class="card date-row">
+            <div>Check-in: <input type="date" id="cin"></div>
+            <div>Check-out: <input type="date" id="cout"></div>
+        </div>
+        <div id="room-grid" class="grid"></div>
+    </div>
+
+    <div id="view-admin" class="hidden">
+        <h1>Admin Dashboard</h1>
+        <div id="admin-grid" class="grid"></div>
+    </div>
+
+    <div id="view-guest-details" class="hidden">
+        <div class="header-flex">
+            <h1>Guest Dossier</h1>
+            <button class="btn btn-secondary" onclick="nav('admin')">Back</button>
+        </div>
+        <div class="card" id="guest-profile-content"></div>
+    </div>
+</div>
+
+<div id="payment-modal">
+    <div class="pay-box">
+        <h2>💳 Secure Payment</h2>
+        <p id="pay-summary"></p>
+        <input type="text" value="**** **** **** 4242" disabled>
+        <button class="btn btn-primary" onclick="confirmBooking()">Confirm & Pay</button>
+        <button class="btn btn-text" onclick="closeModal()">Cancel</button>
+    </div>
+</div>
+
+<script src="script.js"></script> </body>
+</html>
