@@ -7,6 +7,7 @@ let savedCin = "", savedCout = "", savedTotal = 0;
 function nav(id) {
     document.querySelectorAll('.main > div').forEach(div => div.classList.add('hidden'));
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    
     document.getElementById('view-' + id).classList.remove('hidden');
     document.getElementById('nav-' + (id === 'guest-details' ? 'admin' : id)).classList.add('active');
     
@@ -22,14 +23,26 @@ async function register() {
         phoneNumber: document.getElementById('r-phone').value,
         password: document.getElementById('r-pass').value
     };
+    if(!user.username || !user.password) return alert("Please fill required fields");
+    
     userProfile.email = user.email;
     userProfile.phone = user.phoneNumber;
-    await fetch(`${API}/register`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(user) });
-    alert("Success!"); nav('login');
+    
+    try {
+        await fetch(`${API}/register`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(user) 
+        });
+        alert("Account Created! Please Login."); 
+        nav('login');
+    } catch(e) { alert("Registration failed. Check backend."); }
 }
 
 function login() {
-    activeUser = document.getElementById('l-user').value;
+    const user = document.getElementById('l-user').value;
+    if(!user) return alert("Enter username");
+    activeUser = user;
     document.getElementById('user-tag').innerText = "Guest: " + activeUser;
     nav('book');
 }
@@ -41,7 +54,8 @@ async function loadRooms() {
         <div class="card">
             <span class="status-badge bg-available">Available</span>
             <h3>Room ${r.roomNumber}</h3>
-            <p>${r.type} - $${r.price}/night</p>
+            <p>${r.type} Suite</p>
+            <p style="font-weight:bold; color:var(--primary); font-size:1.2rem;">$${r.price}/night</p>
             <button class="btn btn-primary" onclick="initiatePayment(${r.id}, ${r.price})">Book Now</button>
         </div>
     `).join('');
@@ -50,13 +64,14 @@ async function loadRooms() {
 function initiatePayment(id, price) {
     const c1 = document.getElementById('cin').value;
     const c2 = document.getElementById('cout').value;
-    if(!c1 || !c2) return alert("Select dates!");
+    if(!c1 || !c2) return alert("Please select Check-in and Check-out dates!");
     
     savedCin = c1; savedCout = c2; targetRoomId = id;
     const nights = Math.ceil(Math.abs(new Date(c2) - new Date(c1)) / (1000 * 60 * 60 * 24));
-    savedTotal = nights * price;
+    if(nights <= 0) return alert("Checkout must be after Check-in!");
     
-    document.getElementById('pay-summary').innerText = "Total for stay: $" + savedTotal;
+    savedTotal = nights * price;
+    document.getElementById('pay-summary').innerText = `Stay Total: $${savedTotal} (${nights} Nights)`;
     document.getElementById('payment-modal').style.display = 'flex';
 }
 
@@ -65,7 +80,8 @@ async function confirmBooking() {
     const res = await fetch(url, { method: 'POST' });
     if(res.ok) {
         document.getElementById('payment-modal').style.display = 'none';
-        alert("✅ Booked Successfully!"); loadRooms();
+        alert("✅ Success! Your stay at KL Hotel is confirmed."); 
+        loadRooms();
     }
 }
 
@@ -73,10 +89,10 @@ async function loadAdminData() {
     const res = await fetch(`${API}/admin/rooms`);
     const rooms = await res.json();
     document.getElementById('admin-grid').innerHTML = rooms.map(r => `
-        <div class="card" style="border-left: 6px solid ${r.available ? '#22c55e' : '#ef4444'}">
-            <h3>Room ${r.roomNumber}</h3>
+        <div class="card" style="border-left: 6px solid ${r.available ? 'var(--success)' : 'var(--danger)'}">
             <span class="status-badge ${r.available ? 'bg-available' : 'bg-booked'}">${r.available ? 'Vacant' : 'Occupied'}</span>
-            ${!r.available ? `<button class="btn" style="margin-top:10px; background:#f1f5f9; color:#1e293b; width:100%" onclick='showGuestDossier(${JSON.stringify(r)})'>🔍 View Details</button>` : ''}
+            <h3>Room ${r.roomNumber}</h3>
+            ${!r.available ? `<button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick='showGuestDossier(${JSON.stringify(r)})'>View Guest Info</button>` : '<p style="color:var(--text-light)">Available for guest</p>'}
         </div>
     `).join('');
 }
@@ -84,21 +100,19 @@ async function loadAdminData() {
 function showGuestDossier(room) {
     nav('guest-details');
     document.getElementById('guest-profile-content').innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
             <div>
-                <p><b>Name:</b> ${room.bookedBy}</p>
-                <p><b>Email:</b> ${room.guestEmail}</p>
-                <p><b>Phone:</b> ${room.guestPhone}</p>
+                <b>Guest Name</b><p>${room.bookedBy}</p>
+                <b>Email Contact</b><p>${room.guestEmail || 'N/A'}</p>
+                <b>Phone</b><p>${room.guestPhone || 'N/A'}</p>
             </div>
             <div>
-                <p><b>Room:</b> ${room.roomNumber}</p>
-                <p><b>Stay:</b> ${room.checkInDate} to ${room.checkOutDate}</p>
-                <p><b>Paid:</b> <span style="color:green">$${room.totalPaid}</span></p>
+                <b>Room Number</b><p>${room.roomNumber}</p>
+                <b>Booking Period</b><p>${room.checkInDate} to ${room.checkOutDate}</p>
+                <b>Total Amount Paid</b><p style="color:var(--success); font-weight:bold;">$${room.totalPaid}</p>
             </div>
         </div>
     `;
 }
 
-function closeModal() {
-    document.getElementById('payment-modal').style.display = 'none';
-}
+function closeModal() { document.getElementById('payment-modal').style.display = 'none'; }

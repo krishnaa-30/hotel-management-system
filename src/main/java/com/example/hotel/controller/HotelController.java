@@ -34,7 +34,6 @@ public class HotelController {
         return roomRepo.findByIsAvailable(true); 
     }
 
-    // --- FIXED METHOD: ONLY ONE DECLARATION ---
     @PostMapping("/rooms/book/{id}")
     public Room bookRoom(
             @PathVariable Long id, 
@@ -54,6 +53,23 @@ public class HotelController {
         room.setGuestEmail(email);      
         room.setGuestPhone(phone);      
         room.setTotalPaid(amount);      
+        
+        return roomRepo.save(room);
+    }
+
+    // --- NEW CANCEL METHOD ---
+    @PostMapping("/rooms/cancel/{id}")
+    public Room cancelBooking(@PathVariable Long id) {
+        Room room = roomRepo.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
+        
+        // Reset the room to available
+        room.setAvailable(true);
+        room.setBookedBy(null);
+        room.setCheckInDate(null);
+        room.setCheckOutDate(null);
+        room.setGuestEmail(null);
+        room.setGuestPhone(null);
+        room.setTotalPaid(0.0);
         
         return roomRepo.save(room);
     }
